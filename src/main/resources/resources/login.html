@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- login BEGIN -->
+<div class="login-aside">
+    <div class="panel">
+        <div class="panel-heading">
+            <h3 class="panel-title">用户登录</h3>
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <div class="input-group mar-btm">
+                            <span class="input-group-addon">
+                                <i class="ion-person"></i>
+                            </span>
+                    <input type="text" id="user-name" class="form-control" autocomplete="off"
+                           placeholder="请输入用户名">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group mar-btm">
+                            <span class="input-group-addon">
+                                <i class="ion-locked"></i>
+                            </span>
+                    <input type="password" id="user-pwd" autocomplete="off" class="form-control"
+                           placeholder="请输入密码">
+                </div>
+            </div>
+
+            <div class="from-group">
+                <div class="row clearfix">
+                    <div class="col-md-6 col-sm-6">
+                        <div class="pad-ver" style="padding: 0px !important;">
+                            <input id="demo-remember-me" class="magic-checkbox" type="checkbox">
+                            <label for="demo-remember-me">
+                                <font>
+                                    <font>记住密码</font>
+                                </font>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-6 col-sm-6 pull-right">
+                            <div class="pull-right">
+                                <a href="#" style="text-decoration: none;">忘记密码？</a>
+                            </div>
+                        </div> -->
+                </div>
+            </div>
+            <div class="btn-group submit">
+                <button id="login-submit" class="btn btn-block">登录</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- login END -->
+
+
+<script type="application/javascript">
+    var baseApi = "http://127.0.0.1:82";
+    var ysAjax = $.extend({}, {
+        ajax: function (url, data, dataType, callback) {
+            return $.ajax({
+                type: "post",
+                url: baseApi + url,
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                dataType: dataType,
+                success: function (results, s, req) {
+                    callback(results, req);
+                    // console.log(results);
+                },
+            });
+        },
+
+    });
+
+
+
+    $("#login-submit").click(function () {
+        var parm = {
+            pwd: $("#user-pwd").val(),
+            userAccount: $("#user-name").val()
+        };
+
+        ysAjax.ajax('/sys/login', parm, 'json', function (records, request) {
+            console.info(records);
+            if (records.code === 'ERROR') {
+                alert("输入的用户名或者密码有误！");
+            }else {
+
+                console.log(records);
+                var data = records.data;
+
+
+                console.log(request.getResponseHeader("x-auth-token"));
+                sessionStorage.setItem("x-auth-token", request.getResponseHeader("x-auth-token"));
+                sessionStorage.setItem('jurisdiction', JSON.stringify(records.resourcesForUserBos));
+                sessionStorage.setItem("userFkCode", records.userFkCode); //该用户的对应的用户的外键标识
+                sessionStorage.setItem("userName", '高招管理员'); //教职工名字
+                sessionStorage.setItem("indentity", records.indentity); //该用户的身份标识
+                sessionStorage.setItem('jurisdiction', JSON.stringify(records.resourcesForUserBos));
+            }
+
+
+        });
+    });
+</script>
+</body>
+</html>

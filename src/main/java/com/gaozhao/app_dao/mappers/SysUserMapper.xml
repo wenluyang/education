@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaozhao.app_dao.SysUserMapper">
+    <!-- SysUser的resultMap,column是给数据库列起的别名,它对应property类的属性-->
+    <resultMap id="result_SysUser_Map" type="com.gaozhao.app_pojo.domain.SysUser">
+        <id column="id" property="id" />
+        <result column="salt" property="salt" />
+        <result column="create_time" property="createTime" />
+        <result column="creator_fk_code" property="creatorFkCode" />
+        <result column="del_status" property="delStatus" />
+        <result column="expired_date" property="expiredDate" />
+        <result column="token" property="token" />
+        <result column="update_time" property="updateTime" />
+        <result column="phone" property="phone" />
+        <result column="identity" property="identity" />
+        <result column="user_fk_code" property="userFkCode" />
+        <result column="user_account" property="userAccount" />
+        <result column="fk_code" property="fkCode" />
+        <result column="pwd" property="pwd" />
+    </resultMap>
+
+	   <!-- Assist用于辅助工具类setRequires设置的条件,${req.require}表示列名,#{req.value}表示值它是防SQL注入的 -->
+    <sql id="Assist">
+        <where>
+            <foreach collection="require" item="req" separator=" ">
+                ${req.require} 
+                <if test="req.value != null"> #{req.value}</if> 
+                <if test="req.values != null">
+                    <foreach collection="req.values" item="val" separator=","> 
+                        #{val} 
+                    </foreach> 
+                </if> 
+                <if test="req.suffix != null"> ${req.suffix}</if> 
+            </foreach>
+        </where>
+    </sql>
+
+	   <!-- updateAssist用于更新数据的使用它拓展自Assist,用于辅助工具类setRequires设置的条件,${req.require}表示列名,#{req.value}表示值它是防SQL注入的 -->
+    <sql id="updateAssist">
+        <where>
+            <foreach collection="assist.require" item="req" separator=" ">
+                ${req.require} 
+                <if test="req.value != null"> #{req.value}</if> 
+                <if test="req.values != null">
+                    <foreach collection="req.values" item="val" separator=","> 
+                        #{val} 
+                    </foreach> 
+                </if> 
+                <if test="req.suffix != null"> ${req.suffix}</if> 
+            </foreach>
+        </where>
+    </sql>
+
+    <!-- 数据库中表名为:sys_user的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="sys_user_Column">
+        sys_user.id as id
+        ,sys_user.salt as salt
+        ,sys_user.create_time as create_time
+        ,sys_user.creator_fk_code as creator_fk_code
+        ,sys_user.del_status as del_status
+        ,sys_user.expired_date as expired_date
+        ,sys_user.token as token
+        ,sys_user.update_time as update_time
+        ,sys_user.phone as phone
+        ,sys_user.identity as identity
+        ,sys_user.user_fk_code as user_fk_code
+        ,sys_user.user_account as user_account
+        ,sys_user.fk_code as fk_code
+        ,sys_user.pwd as pwd
+    </sql>
+
+    <!--获得类名为:SysUser对应的数据库表的数据总行数 -->
+    <select id="getSysUserRowCount" parameterType="com.gaozhao.app_common.util.Assist" resultType="java.lang.Long">
+        select count(id) from sys_user
+        <if test="require!=null"><include refid="Assist" /></if>
+    </select>
+    <!-- 获得类名为:SysUser对应数据库中表的数据集合 -->
+    <select id="selectSysUser" parameterType="com.gaozhao.app_common.util.Assist"  resultMap="result_SysUser_Map">
+        select  <if test="distinct !=null">${distinct}</if>
+        <choose>
+            <when test="resultColumn!=null">${resultColumn}</when>
+            <otherwise>
+        <include refid="sys_user_Column" /> 
+            </otherwise>
+        </choose>
+        from sys_user
+        <choose>
+            <when test="rowSize ==null">
+                <if test="require!=null">
+                    <include refid="Assist" />
+                </if>
+                <if test="order !=null">${order}</if>
+            </when>
+            <otherwise>
+                inner join
+                (
+                SELECT id as primary_key FROM sys_user
+                <if test="require!=null">
+                    <include refid="Assist" />
+                </if>
+                <if test="order !=null">${order}</if>
+                <choose>
+                    <when test="startRow !=null and rowSize !=null">LIMIT #{startRow},#{rowSize} </when>
+                    <when test="rowSize !=null">LIMIT #{rowSize}</when>
+                 </choose>
+                 ) as tmp
+                 on tmp.primary_key=sys_user.id
+            </otherwise>
+        </choose>
+    </select> 
+
+    <!-- 获得一个SysUser对象,以参数SysUser对象中不为空的属性作为条件进行查询-->
+    <select id="selectSysUserByObj" parameterType="com.gaozhao.app_pojo.domain.SysUser" resultMap="result_SysUser_Map">
+        select 
+            <include refid="sys_user_Column" /> 
+        from sys_user
+        <where>
+            <if test="pwd != null "> and sys_user.pwd = #{pwd}</if>
+            <if test="fkCode != null "> and sys_user.fk_code = #{fkCode}</if>
+            <if test="userAccount != null "> and sys_user.user_account = #{userAccount}</if>
+            <if test="userFkCode != null "> and sys_user.user_fk_code = #{userFkCode}</if>
+            <if test="identity != null "> and sys_user.identity = #{identity}</if>
+            <if test="phone != null "> and sys_user.phone = #{phone}</if>
+            <if test="updateTime != null "> and sys_user.update_time = #{updateTime}</if>
+            <if test="token != null "> and sys_user.token = #{token}</if>
+            <if test="expiredDate != null "> and sys_user.expired_date = #{expiredDate}</if>
+            <if test="delStatus != null "> and sys_user.del_status = #{delStatus}</if>
+            <if test="creatorFkCode != null "> and sys_user.creator_fk_code = #{creatorFkCode}</if>
+            <if test="createTime != null "> and sys_user.create_time = #{createTime}</if>
+            <if test="salt != null "> and sys_user.salt = #{salt}</if>
+            <if test="id != null "> and sys_user.id = #{id}</if>
+        </where>
+    </select> 
+
+    <!-- 通过SysUser的id获得对应数据库中表的数据对象-->
+    <select id="selectSysUserById" parameterType="java.lang.Long" resultMap="result_SysUser_Map">
+        select 
+            <include refid="sys_user_Column" /> 
+        from sys_user
+        where sys_user.id = #{id}
+    </select> 
+
+    <!-- 将SysUser插入到对应数据库的表中,包括属性值为null的数据-->
+
+    <insert id="insertSysUser" parameterType="com.gaozhao.app_pojo.domain.SysUser">
+        insert into sys_user(id,salt,create_time,creator_fk_code,del_status,expired_date,token,update_time,phone,identity,user_fk_code,user_account,fk_code,pwd) 
+        values(#{id},#{salt},#{createTime},#{creatorFkCode},#{delStatus},#{expiredDate},#{token},#{updateTime},#{phone},#{identity},#{userFkCode},#{userAccount},#{fkCode},#{pwd})
+    </insert>
+
+    <!-- 将SysUser中属性值不为null的数据,插入到对应数据库的表中-->
+    <insert id="insertNonEmptySysUser" parameterType="com.gaozhao.app_pojo.domain.SysUser">
+        insert into sys_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="salt != null">salt,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="creatorFkCode != null">creator_fk_code,</if>
+            <if test="delStatus != null">del_status,</if>
+            <if test="expiredDate != null">expired_date,</if>
+            <if test="token != null">token,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="phone != null">phone,</if>
+            <if test="identity != null">identity,</if>
+            <if test="userFkCode != null">user_fk_code,</if>
+            <if test="userAccount != null">user_account,</if>
+            <if test="fkCode != null">fk_code,</if>
+            <if test="pwd != null">pwd,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null"> #{id},</if>
+            <if test="salt != null"> #{salt},</if>
+            <if test="createTime != null"> #{createTime},</if>
+            <if test="creatorFkCode != null"> #{creatorFkCode},</if>
+            <if test="delStatus != null"> #{delStatus},</if>
+            <if test="expiredDate != null"> #{expiredDate},</if>
+            <if test="token != null"> #{token},</if>
+            <if test="updateTime != null"> #{updateTime},</if>
+            <if test="phone != null"> #{phone},</if>
+            <if test="identity != null"> #{identity},</if>
+            <if test="userFkCode != null"> #{userFkCode},</if>
+            <if test="userAccount != null"> #{userAccount},</if>
+            <if test="fkCode != null"> #{fkCode},</if>
+            <if test="pwd != null"> #{pwd},</if>
+        </trim>
+    </insert>
+
+    <!-- 将SysUser批量插入到对应数据库的表中-->
+    <insert id="insertSysUserByBatch" parameterType="ArrayList">
+        insert into sys_user(id,salt,create_time,creator_fk_code,del_status,expired_date,token,update_time,phone,identity,user_fk_code,user_account,fk_code,pwd) values
+        <foreach collection="list" item="item" index="index" separator="," >
+            (#{item.id},#{item.salt},#{item.createTime},#{item.creatorFkCode},#{item.delStatus},#{item.expiredDate},#{item.token},#{item.updateTime},#{item.phone},#{item.identity},#{item.userFkCode},#{item.userAccount},#{item.fkCode},#{item.pwd})
+        </foreach>
+    </insert>
+
+    <!-- 通过SysUser的id将数据库表中对应的数据删除-->
+    <delete id="deleteSysUserById" parameterType="java.lang.Long">
+        delete from sys_user
+        where id = #{id}
+    </delete>
+
+    <!-- 通过辅助工具Assist中的条件将SysUser对应的数据库表的数据删除-->
+    <delete id="deleteSysUser" parameterType="com.gaozhao.app_common.util.Assist">
+        delete from sys_user
+        <if test="require!=null"><include refid="Assist" /></if>
+    </delete>
+
+    <!-- 通过SysUser的id将SysUser的数据更新到数据库中对应的表,包括值null的数据-->
+    <update id="updateSysUserById" parameterType="com.gaozhao.app_pojo.domain.SysUser">
+        update sys_user set
+            salt=#{salt}
+            ,create_time=#{createTime}
+            ,creator_fk_code=#{creatorFkCode}
+            ,del_status=#{delStatus}
+            ,expired_date=#{expiredDate}
+            ,token=#{token}
+            ,update_time=#{updateTime}
+            ,phone=#{phone}
+            ,identity=#{identity}
+            ,user_fk_code=#{userFkCode}
+            ,user_account=#{userAccount}
+            ,fk_code=#{fkCode}
+            ,pwd=#{pwd}
+        where id=#{id}
+    </update>
+
+    <!-- 通过SysUser的id将SysUser中属性值不为null的数据更新到数据库对应的表中-->
+    <update id="updateNonEmptySysUserById" parameterType="com.gaozhao.app_pojo.domain.SysUser">
+        update sys_user
+        <set>
+            <if test="salt != null">
+                salt=#{salt},
+            </if>
+            <if test="createTime != null">
+                create_time=#{createTime},
+            </if>
+            <if test="creatorFkCode != null">
+                creator_fk_code=#{creatorFkCode},
+            </if>
+            <if test="delStatus != null">
+                del_status=#{delStatus},
+            </if>
+            <if test="expiredDate != null">
+                expired_date=#{expiredDate},
+            </if>
+            <if test="token != null">
+                token=#{token},
+            </if>
+            <if test="updateTime != null">
+                update_time=#{updateTime},
+            </if>
+            <if test="phone != null">
+                phone=#{phone},
+            </if>
+            <if test="identity != null">
+                identity=#{identity},
+            </if>
+            <if test="userFkCode != null">
+                user_fk_code=#{userFkCode},
+            </if>
+            <if test="userAccount != null">
+                user_account=#{userAccount},
+            </if>
+            <if test="fkCode != null">
+                fk_code=#{fkCode},
+            </if>
+            <if test="pwd != null">
+                pwd=#{pwd},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <!-- 通过辅助工具Assist中的条件将SysUser中的数据更新到数据库对应的表中,包括值为null的数据-->
+    <update id="updateSysUser" parameterType="map">
+        update sys_user
+        <set>
+                id=#{enti.id},
+                salt=#{enti.salt},
+                create_time=#{enti.createTime},
+                creator_fk_code=#{enti.creatorFkCode},
+                del_status=#{enti.delStatus},
+                expired_date=#{enti.expiredDate},
+                token=#{enti.token},
+                update_time=#{enti.updateTime},
+                phone=#{enti.phone},
+                identity=#{enti.identity},
+                user_fk_code=#{enti.userFkCode},
+                user_account=#{enti.userAccount},
+                fk_code=#{enti.fkCode},
+                pwd=#{enti.pwd},
+        </set>
+        <if test="assist.require!=null"><include refid="updateAssist" /></if>
+    </update>
+
+    <!-- 通过辅助工具Assist中的条件将SysUser中属性值不为null的数据更新到数据库对应的表中-->
+    <update id="updateNonEmptySysUser" parameterType="map">
+        update sys_user
+        <set>
+            <if test="enti.id != null">
+                id=#{enti.id},
+            </if>
+            <if test="enti.salt != null">
+                salt=#{enti.salt},
+            </if>
+            <if test="enti.createTime != null">
+                create_time=#{enti.createTime},
+            </if>
+            <if test="enti.creatorFkCode != null">
+                creator_fk_code=#{enti.creatorFkCode},
+            </if>
+            <if test="enti.delStatus != null">
+                del_status=#{enti.delStatus},
+            </if>
+            <if test="enti.expiredDate != null">
+                expired_date=#{enti.expiredDate},
+            </if>
+            <if test="enti.token != null">
+                token=#{enti.token},
+            </if>
+            <if test="enti.updateTime != null">
+                update_time=#{enti.updateTime},
+            </if>
+            <if test="enti.phone != null">
+                phone=#{enti.phone},
+            </if>
+            <if test="enti.identity != null">
+                identity=#{enti.identity},
+            </if>
+            <if test="enti.userFkCode != null">
+                user_fk_code=#{enti.userFkCode},
+            </if>
+            <if test="enti.userAccount != null">
+                user_account=#{enti.userAccount},
+            </if>
+            <if test="enti.fkCode != null">
+                fk_code=#{enti.fkCode},
+            </if>
+            <if test="enti.pwd != null">
+                pwd=#{enti.pwd},
+            </if>
+        </set>
+        <if test="assist.require!=null"><include refid="updateAssist" /></if>
+    </update>
+
+</mapper>
